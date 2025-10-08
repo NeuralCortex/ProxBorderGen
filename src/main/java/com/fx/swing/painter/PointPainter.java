@@ -1,5 +1,7 @@
 package com.fx.swing.painter;
 
+import com.fx.swing.Globals;
+import com.fx.swing.pojo.PositionPOJO;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -15,9 +17,10 @@ public class PointPainter implements Painter<JXMapViewer> {
 
     private final Color color = Color.RED;
     private final boolean antiAlias = true;
-    private final List<GeoPosition> list;
+    private final List<PositionPOJO> list;
+    private final double lineLength = 50.0; // Length of azimuth line in pixels
 
-    public PointPainter(List<GeoPosition> list) {
+    public PointPainter(List<PositionPOJO> list) {
         this.list = list;
     }
 
@@ -38,12 +41,19 @@ public class PointPainter implements Painter<JXMapViewer> {
     }
 
     private void drawList(Graphics2D g, JXMapViewer map) {
-        g.setColor(color);
         g.setStroke(new BasicStroke(1));
 
-        for (GeoPosition pos : list) {
-            Point2D pt = map.getTileFactory().geoToPixel(pos, map.getZoom());
+        for (int i = 0; i < list.size(); i++) {
+            g.setColor(color);
+            PositionPOJO pos = list.get(i);
+            Point2D pt = map.getTileFactory().geoToPixel(new GeoPosition(pos.getLat(), pos.getLon()), map.getZoom());
             drawPoint(g, pt, 3);
+
+            // Draw azimuth line if corresponding azimuth exists
+            if (pos.getAzi() != Globals.NO_BEARING) {
+                g.setColor(Color.BLUE);
+                drawAzimuthLine(g, pt, pos.getAzi(), 3);
+            }
         }
     }
 
@@ -55,5 +65,21 @@ public class PointPainter implements Painter<JXMapViewer> {
         y = y + (int) (size / 2.0);
 
         g.fillOval(x, y, size, size);
+    }
+
+    private void drawAzimuthLine(Graphics2D g, Point2D startPoint, double azimuth, int pointSize) {
+        // Convert azimuth from degrees to radians
+        double azimuthRad = Math.toRadians(azimuth);
+
+        // Adjust start point to match the center of the drawn point
+        double startX = startPoint.getX() + pointSize / 2.0;
+        double startY = startPoint.getY() + pointSize / 2.0;
+
+        // Calculate the end point of the line
+        double endX = startX + lineLength * Math.sin(azimuthRad);
+        double endY = startY - lineLength * Math.cos(azimuthRad); // Subtract because y increases downward in graphics
+
+        // Draw the line
+        g.drawLine((int) startX, (int) startY, (int) endX, (int) endY);
     }
 }

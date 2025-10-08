@@ -19,6 +19,8 @@ import com.fx.swing.dialog.ProgressDialog;
 import com.fx.swing.listener.MousePositionListener;
 import com.fx.swing.model.PositionTableModel;
 import com.fx.swing.painter.PointPainter;
+import com.fx.swing.renderer.EmptyTableCellRenderer;
+import com.fx.swing.thread.AzimuthThread;
 import com.fx.swing.thread.ExportThreadCSV;
 import com.fx.swing.tools.LayoutFunctions;
 import com.mapbox.geojson.MultiPolygon;
@@ -41,12 +43,14 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.MouseInputListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -87,6 +91,8 @@ public class MapController extends JPanel implements PopulateInterface, ActionLi
 
     private IntegerTextField integerTextField;
     private IntegerComboBox cbNumber;
+    private JTextField tfDeviation;
+    private JCheckBox cbDeviation;
     private JButton btnGenerate;
     private JButton btnReset;
     private JButton btnCsvExport;
@@ -122,12 +128,19 @@ public class MapController extends JPanel implements PopulateInterface, ActionLi
         integerTextField.setMaximumSize(new Dimension(40, cbNumber.getPreferredSize().height));
         integerTextField.setText("50");
 
+        tfDeviation = new JTextField();
+        tfDeviation.setMaximumSize(new Dimension(20, cbNumber.getPreferredSize().height));
+        tfDeviation.setText("25");
+
+        cbDeviation = new JCheckBox(bundle.getString("lb.azi"));
+
         btnGenerate = new JButton(bundle.getString("btn.generate"));
         btnGenerate.addActionListener(this);
         btnReset = new JButton(bundle.getString("btn.reset"));
         btnReset.addActionListener(this);
         JSeparator jSeparator = new JSeparator(JSeparator.VERTICAL);
-        JPanel panelTop = LayoutFunctions.createOptionPanelX(Globals.COLOR_BLUE, new JLabel(""), new JLabel(bundle.getString("lb.width")), integerTextField, new JLabel(bundle.getString("lb.number")), cbNumber, btnGenerate, jSeparator, btnReset);
+        JSeparator jSeparator2 = new JSeparator(JSeparator.VERTICAL);
+        JPanel panelTop = LayoutFunctions.createOptionPanelX(Globals.COLOR_BLUE, new JLabel(""), new JLabel(bundle.getString("lb.width")), integerTextField, new JLabel(bundle.getString("lb.number")), cbNumber, btnGenerate, jSeparator, new JLabel(bundle.getString("lb.dev")), tfDeviation, cbDeviation, jSeparator2, btnReset);
         add(panelTop, BorderLayout.NORTH);
 
         JPanel panelInfo = LayoutFunctions.createOptionPanelX(Globals.COLOR_BLUE, new JLabel(bundle.getString("lb.geoinfo")));
@@ -170,9 +183,12 @@ public class MapController extends JPanel implements PopulateInterface, ActionLi
         headerList.add(new TableHeaderPOJO(bundle.getString("col.idx"), String.class));
         headerList.add(new TableHeaderPOJO(bundle.getString("col.lat"), String.class));
         headerList.add(new TableHeaderPOJO(bundle.getString("col.lon"), String.class));
+        headerList.add(new TableHeaderPOJO(bundle.getString("col.azi"), String.class));
 
         PositionTableModel positionTableModel = new PositionTableModel(headerList, new ArrayList<>());
         tableData = new JTable(positionTableModel);
+        // Apply custom renderer to the Azimuth column (index 3)
+        tableData.getColumnModel().getColumn(3).setCellRenderer(new EmptyTableCellRenderer());
         tableData.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         double heightPercentages[] = {10.0, 15.0, 10.0, 85.0};
@@ -435,8 +451,34 @@ public class MapController extends JPanel implements PopulateInterface, ActionLi
 
             if (borderPainter != null) {
                 List<GeoPosition> posList = createPolygonFromGeoPositionsAndGenerateRandomPoints(borderPainter.getBorder(), width, number);
+                List<Double> aziList = null;
 
-                PointPainter pointPainter = new PointPainter(posList);
+                if (cbDeviation.isSelected()) {
+                    ProgressDialog progressDialog = new ProgressDialog(mainController.getFrame(), bundle.getString("lb.azi"), Dialog.ModalityType.APPLICATION_MODAL, bundle.getString("lb.cancel"), 0, posList.size() - 1);
+                    String text = tfDeviation.getText().trim();
+                    double dev = Double.parseDouble(text);
+                    AzimuthThread azimuthThread = new AzimuthThread(progressDialog, posList, borderPainter.getBorder(), dev);
+                    azimuthThread.start();
+                    progressDialog.setVisible(true);
+                    try {
+                        azimuthThread.join();
+                    } catch (InterruptedException ex) {
+                        System.out.println(ex.getLocalizedMessage());
+                    }
+                    aziList = azimuthThread.getAzimuths();
+                }
+
+                List<PositionPOJO> list = new ArrayList<>();
+                for (int i = 0; i < posList.size(); i++) {
+                    GeoPosition pos = posList.get(i);
+                    if (aziList != null) {
+                        list.add(new PositionPOJO(pos.getLongitude(), pos.getLatitude(), i, aziList.get(i)));
+                    } else {
+                        list.add(new PositionPOJO(pos.getLongitude(), pos.getLatitude(), i, Globals.NO_BEARING));
+                    }
+                }
+
+                PointPainter pointPainter = new PointPainter(list);
                 painters.add(pointPainter);
 
                 CompoundPainter<JXMapViewer> painter = new CompoundPainter<>(painters);
@@ -444,7 +486,7 @@ public class MapController extends JPanel implements PopulateInterface, ActionLi
                 mapViewer.repaint();
 
                 ((PositionTableModel) tableData.getModel()).getList().clear();
-                ((PositionTableModel) tableData.getModel()).setList(posList);
+                ((PositionTableModel) tableData.getModel()).setList(list);
             }
         } catch (NumberFormatException | ParseException ex) {
             String msg = "";
@@ -471,13 +513,13 @@ public class MapController extends JPanel implements PopulateInterface, ActionLi
         // Show save dialog
         int result = fileChooser.showSaveDialog(mainController);
 
-        List<GeoPosition> list = ((PositionTableModel) tableData.getModel()).getList();
+        List<PositionPOJO> list = ((PositionTableModel) tableData.getModel()).getList();
 
         if (result == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
 
             ProgressDialog progressDialog = new ProgressDialog(mainController.getFrame(), bundle.getString("btn.csv"), Dialog.ModalityType.APPLICATION_MODAL, bundle.getString("lb.cancel"), 0, list.size() - 1);
-            ExportThreadCSV exportThreadCSV = new ExportThreadCSV(progressDialog, list, file.getAbsolutePath());
+            ExportThreadCSV exportThreadCSV = new ExportThreadCSV(progressDialog, list, file.getAbsolutePath(), cbDeviation.isSelected());
             exportThreadCSV.start();
             progressDialog.setVisible(true);
 

@@ -5,6 +5,7 @@
 ## How the program works
 
 ProxBorderGen is a program that generates random geographic coordinates in WGS84 format within a predetermined state or country border in a specific area.</br>
+It is able to calculate bearings in the direction of the boundary line with the help of multithreading.</br>
 The generated data can be exported as a CSV file.
 
 ## A notice
@@ -17,7 +18,8 @@ An existing internet connection is mandatory.
 1. Right click on the map and select the country of your choise
 2. Select state or country
 3. Generate test data based on the specified width and number
-4. Export CSV file (semicolon separated)
+4. Choose bearing with a deviation in percent
+5. Export CSV file (semicolon separated)
 
 ## Technology used
 

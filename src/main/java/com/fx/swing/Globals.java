@@ -41,4 +41,7 @@ public class Globals {
     public static final String THEME = "THEME";
     public static final String THEME_DARK = "THEME_DARK";
     public static final String THEME_LIGHT = "THEME_LIGHT";
+
+    //Constants
+    public static final int NO_BEARING = -9999;
 }

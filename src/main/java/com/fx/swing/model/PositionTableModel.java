@@ -6,15 +6,14 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jxmapviewer.viewer.GeoPosition;
 
 public class PositionTableModel extends AbstractTableModel {
 
     private static final Logger _log = LogManager.getLogger(PositionTableModel.class);
     private final List<TableHeaderPOJO> headerList;
-    private List<GeoPosition> list;
+    private List<PositionPOJO> list;
 
-    public PositionTableModel(List<TableHeaderPOJO> headerList, List<GeoPosition> list) {
+    public PositionTableModel(List<TableHeaderPOJO> headerList, List<PositionPOJO> list) {
         this.headerList = headerList;
         this.list = list;
     }
@@ -31,14 +30,16 @@ public class PositionTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        GeoPosition positionPOJO = list.get(rowIndex);
+        PositionPOJO positionPOJO = list.get(rowIndex);
         switch (columnIndex) {
             case 0:
                 return rowIndex;
             case 1:
-                return positionPOJO.getLatitude();
+                return positionPOJO.getLat();
             case 2:
-                return positionPOJO.getLongitude();
+                return positionPOJO.getLon();
+            case 3:
+                return positionPOJO.getAzi();
             default:
                 throw new AssertionError();
         }
@@ -59,16 +60,16 @@ public class PositionTableModel extends AbstractTableModel {
         return headerList.get(column).getName();
     }
 
-    public void add(GeoPosition positionPOJO) {
+    public void add(PositionPOJO positionPOJO) {
         list.add(positionPOJO);
         fireTableDataChanged();
     }
 
-    public List<GeoPosition> getList() {
+    public List<PositionPOJO> getList() {
         return list;
     }
 
-    public void setList(List<GeoPosition> list) {
+    public void setList(List<PositionPOJO> list) {
         this.list = list;
         fireTableDataChanged();
     }

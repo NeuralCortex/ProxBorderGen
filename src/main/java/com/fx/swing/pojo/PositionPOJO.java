@@ -4,8 +4,9 @@ public class PositionPOJO {
 
     private double lon;
     private double lat;
-    private int idx=0;
-    
+    private double azi;
+    private int idx = 0;
+
     public PositionPOJO(double lon, double lat) {
         this.lon = lon;
         this.lat = lat;
@@ -15,6 +16,13 @@ public class PositionPOJO {
         this.lon = lon;
         this.lat = lat;
         this.idx = idx;
+    }
+
+    public PositionPOJO(double lon, double lat, int idx, double azi) {
+        this.lon = lon;
+        this.lat = lat;
+        this.idx = idx;
+        this.azi = azi;
     }
 
     public double getLon() {
@@ -40,4 +48,13 @@ public class PositionPOJO {
     public void setIdx(int idx) {
         this.idx = idx;
     }
+
+    public double getAzi() {
+        return azi;
+    }
+
+    public void setAzi(double azi) {
+        this.azi = azi;
+    }
+
 }
