@@ -140,7 +140,8 @@ public class MapController extends JPanel implements PopulateInterface, ActionLi
         btnReset.addActionListener(this);
         JSeparator jSeparator = new JSeparator(JSeparator.VERTICAL);
         JSeparator jSeparator2 = new JSeparator(JSeparator.VERTICAL);
-        JPanel panelTop = LayoutFunctions.createOptionPanelX(Globals.COLOR_BLUE, new JLabel(""), new JLabel(bundle.getString("lb.width")), integerTextField, new JLabel(bundle.getString("lb.number")), cbNumber, btnGenerate, jSeparator, new JLabel(bundle.getString("lb.dev")), tfDeviation, cbDeviation, jSeparator2, btnReset);
+        JSeparator jSeparator3 = new JSeparator(JSeparator.VERTICAL);
+        JPanel panelTop = LayoutFunctions.createOptionPanelX(Globals.COLOR_BLUE, new JLabel(""), new JLabel(bundle.getString("lb.width")), integerTextField, new JLabel(bundle.getString("lb.number")), cbNumber, jSeparator3, new JLabel(bundle.getString("lb.dev")), tfDeviation, cbDeviation, jSeparator, btnGenerate, jSeparator2, btnReset);
         add(panelTop, BorderLayout.NORTH);
 
         JPanel panelInfo = LayoutFunctions.createOptionPanelX(Globals.COLOR_BLUE, new JLabel(bundle.getString("lb.geoinfo")));
@@ -226,7 +227,9 @@ public class MapController extends JPanel implements PopulateInterface, ActionLi
 
         MousePositionListener mousePositionListener = new MousePositionListener(mapViewer);
         mousePositionListener.setGeoPosListener((GeoPosition geoPosition) -> {
-            mainController.getLabelStatus().setText(bundle.getString("col.lat") + ": " + geoPosition.getLatitude() + " " + bundle.getString("col.lon") + ": " + geoPosition.getLongitude());
+            String lat = String.format("%.5f", geoPosition.getLatitude());
+            String lon = String.format("%.5f", geoPosition.getLongitude());
+            mainController.getLabelStatus().setText(bundle.getString("col.lat") + ": " + lat + " " + bundle.getString("col.lon") + ": " + lon);
         });
         mapViewer.addMouseMotionListener(mousePositionListener);
 

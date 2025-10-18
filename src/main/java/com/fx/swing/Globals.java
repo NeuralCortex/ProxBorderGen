@@ -31,7 +31,8 @@ public class Globals {
     }
 
     //Images
-    public static final String APP_LOGO_PATH = System.getProperty("user.dir") + "/images/kdf.png";
+    public static final String APP_LOGO_PATH = "/images/kdf.png";
+    public static final String PNG_PLUS = "/images/plus.png";
 
     //Colors
     public static final Color COLOR_BLUE = HelperFunctions.getColorFromHex("#2196F3");

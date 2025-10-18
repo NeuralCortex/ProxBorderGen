@@ -1,30 +1,26 @@
-# ProxBorderGen 1.0.0
+# ProxBorderGen 1.1.0
 
-![image](https://github.com/NeuralCortex/ProxBorderGen/blob/main/images/app.png)
+![Application Screenshot](https://github.com/NeuralCortex/ProxBorderGen/blob/main/images/app.png)
 
-## How the program works
+## Overview
 
-ProxBorderGen is a program that generates random geographic coordinates in WGS84 format within a predetermined state or country border in a specific area.</br>
-It is able to calculate bearings in the direction of the boundary line with the help of multithreading.</br>
-The generated data can be exported as a CSV file.
+ProxBorderGen is a Java-based application that generates random geographic coordinates in WGS84 format within the boundaries of a specified state or country. It utilizes multithreading to calculate bearings toward the boundary line. The generated data can be exported as a CSV file.
 
-## A notice
+## Requirements
 
-Since the jxmapviewer2 library no longer works, the [corrected version](https://github.com/NeuralCortex/JXMapViewer2) must be used.</br>
-An existing internet connection is mandatory.
+- An active internet connection is required.
+- The application uses a corrected version of the JXMapViewer2 library, available at [NeuralCortex/JXMapViewer2](https://github.com/NeuralCortex/JXMapViewer2), as the original library is no longer functional.
+- Java Runtime Environment (JRE) or Java Development Kit (JDK) version 24 is required.
 
 ## Workflow
 
-1. Right click on the map and select the country of your choise
-2. Select state or country
-3. Generate test data based on the specified width and number
-4. Choose bearing with a deviation in percent
-5. Export CSV file (semicolon separated)
+1. Right-click on the map to select a country of your choice.
+2. Choose a state or country from the available options.
+3. Specify the bearing with a percentage deviation.
+4. Generate test data based on the defined width and quantity.
+5. Export the data as a semicolon-separated CSV file.
 
-## Technology used
+## Technologies Used
 
-This Swing project was built with the Apache NetBeans 27 IDE [NetBeans 27](https://netbeans.apache.org/).
-
-The following frameworks should be installed:
-
-- JAVA SDK [JAVA 24](https://www.oracle.com/de/java/technologies/downloads/#jdk24-windows)
+- **IDE**: [Apache NetBeans 27](https://netbeans.apache.org/)
+- **Java SDK**: [Java 24](https://www.oracle.com/java/technologies/downloads/#jdk24-windows)
